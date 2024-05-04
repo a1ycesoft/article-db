@@ -17,19 +17,19 @@ import (
 
 // START ======================================= Server Service Definition ======================================= START
 
-// GreeterService defines service.
-type GreeterService interface {
+// ArticleDbService defines service.
+type ArticleDbService interface {
 	Hello(ctx context.Context, req *HelloRequest) (*HelloResponse, error)
 }
 
-func GreeterService_Hello_Handler(svr interface{}, ctx context.Context, f server.FilterFunc) (interface{}, error) {
+func ArticleDbService_Hello_Handler(svr interface{}, ctx context.Context, f server.FilterFunc) (interface{}, error) {
 	req := &HelloRequest{}
 	filters, err := f(req)
 	if err != nil {
 		return nil, err
 	}
 	handleFunc := func(ctx context.Context, reqbody interface{}) (interface{}, error) {
-		return svr.(GreeterService).Hello(ctx, reqbody.(*HelloRequest))
+		return svr.(ArticleDbService).Hello(ctx, reqbody.(*HelloRequest))
 	}
 
 	var rsp interface{}
@@ -40,31 +40,31 @@ func GreeterService_Hello_Handler(svr interface{}, ctx context.Context, f server
 	return rsp, nil
 }
 
-// GreeterServer_ServiceDesc descriptor for server.RegisterService.
-var GreeterServer_ServiceDesc = server.ServiceDesc{
-	ServiceName: "arisu.articledb.Greeter",
-	HandlerType: ((*GreeterService)(nil)),
+// ArticleDbServer_ServiceDesc descriptor for server.RegisterService.
+var ArticleDbServer_ServiceDesc = server.ServiceDesc{
+	ServiceName: "arisu.ArticleDb",
+	HandlerType: ((*ArticleDbService)(nil)),
 	Methods: []server.Method{
 		{
-			Name: "/arisu.articledb.Greeter/Hello",
-			Func: GreeterService_Hello_Handler,
+			Name: "/arisu.ArticleDb/Hello",
+			Func: ArticleDbService_Hello_Handler,
 		},
 	},
 }
 
-// RegisterGreeterService registers service.
-func RegisterGreeterService(s server.Service, svr GreeterService) {
-	if err := s.Register(&GreeterServer_ServiceDesc, svr); err != nil {
-		panic(fmt.Sprintf("Greeter register error:%v", err))
+// RegisterArticleDbService registers service.
+func RegisterArticleDbService(s server.Service, svr ArticleDbService) {
+	if err := s.Register(&ArticleDbServer_ServiceDesc, svr); err != nil {
+		panic(fmt.Sprintf("ArticleDb register error:%v", err))
 	}
 }
 
 // START --------------------------------- Default Unimplemented Server Service --------------------------------- START
 
-type UnimplementedGreeter struct{}
+type UnimplementedArticleDb struct{}
 
-func (s *UnimplementedGreeter) Hello(ctx context.Context, req *HelloRequest) (*HelloResponse, error) {
-	return nil, errors.New("rpc Hello of service Greeter is not implemented")
+func (s *UnimplementedArticleDb) Hello(ctx context.Context, req *HelloRequest) (*HelloResponse, error) {
+	return nil, errors.New("rpc Hello of service ArticleDb is not implemented")
 }
 
 // END --------------------------------- Default Unimplemented Server Service --------------------------------- END
@@ -73,28 +73,28 @@ func (s *UnimplementedGreeter) Hello(ctx context.Context, req *HelloRequest) (*H
 
 // START ======================================= Client Service Definition ======================================= START
 
-// GreeterClientProxy defines service client proxy
-type GreeterClientProxy interface {
+// ArticleDbClientProxy defines service client proxy
+type ArticleDbClientProxy interface {
 	Hello(ctx context.Context, req *HelloRequest, opts ...client.Option) (rsp *HelloResponse, err error)
 }
 
-type GreeterClientProxyImpl struct {
+type ArticleDbClientProxyImpl struct {
 	client client.Client
 	opts   []client.Option
 }
 
-var NewGreeterClientProxy = func(opts ...client.Option) GreeterClientProxy {
-	return &GreeterClientProxyImpl{client: client.DefaultClient, opts: opts}
+var NewArticleDbClientProxy = func(opts ...client.Option) ArticleDbClientProxy {
+	return &ArticleDbClientProxyImpl{client: client.DefaultClient, opts: opts}
 }
 
-func (c *GreeterClientProxyImpl) Hello(ctx context.Context, req *HelloRequest, opts ...client.Option) (*HelloResponse, error) {
+func (c *ArticleDbClientProxyImpl) Hello(ctx context.Context, req *HelloRequest, opts ...client.Option) (*HelloResponse, error) {
 	ctx, msg := codec.WithCloneMessage(ctx)
 	defer codec.PutBackMessage(msg)
-	msg.WithClientRPCName("/arisu.articledb.Greeter/Hello")
-	msg.WithCalleeServiceName(GreeterServer_ServiceDesc.ServiceName)
+	msg.WithClientRPCName("/arisu.ArticleDb/Hello")
+	msg.WithCalleeServiceName(ArticleDbServer_ServiceDesc.ServiceName)
 	msg.WithCalleeApp("")
 	msg.WithCalleeServer("")
-	msg.WithCalleeService("Greeter")
+	msg.WithCalleeService("ArticleDb")
 	msg.WithCalleeMethod("Hello")
 	msg.WithSerializationType(codec.SerializationTypePB)
 	callopts := make([]client.Option, 0, len(c.opts)+len(opts))

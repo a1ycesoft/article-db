@@ -9,7 +9,7 @@ import (
 
 func main() {
 	s := trpc.NewServer()
-	pb.RegisterGreeterService(s, &service.Greeter{})
+	pb.RegisterArticleDbService(s, &service.ServiceImpl{})
 	if err := s.Serve(); err != nil {
 		log.Error(err)
 	}

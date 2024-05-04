@@ -1,5 +1,5 @@
 server:
   service:
-    - name: arisu.articledb
+    - name: arisu.ArticleDb
       ip: 127.0.0.1
       port: 8000

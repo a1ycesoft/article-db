@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package arisu.articledb;
+package arisu;
 
 option go_package = "article-db/pb";
 
-service Greeter {
+service ArticleDb {
   rpc Hello(HelloRequest) returns(HelloResponse){}
 }
 

@@ -3,3 +3,30 @@ server:
     - name: arisu.ArticleDb
       ip: 127.0.0.1
       port: 8000
+      protocol: http
+
+
+client:
+  service:
+    - name: arisu.mysql.docker.db01
+      target: dsn://root:173371292acg.@tcp(127.0.0.1:3308)/article_db?charset=utf8mb4&parseTime=True
+    - name: arisu.mysql.docker.es01
+
+plugins: #插件配置
+  database:
+    goes:
+      clientoptions:
+        - name: arisu.mysql.docker.es01 # 和 client 中的 service name 保持一致
+          url: http://127.0.0.1:9600 #es地址
+          timeout: 1000 #超时时间
+    gorm:
+      # 所有数据库连接默认的日志配置
+      logger:
+        slow_threshold: 1000 # 慢查询阈值，单位 ms
+        colorful: true # 日志是否着色
+        ignore_record_not_found_error: true # 是否忽略记录不存在的错误
+        log_level: 4 # 1: Silent, 2: Error, 3: Warn, 4: Info
+      # 所有数据库连接默认的连接池配置
+      max_idle: 20 # 最大空闲连接数
+      max_open: 100 # 最大在线连接数
+      max_lifetime: 180000 # 连接最大生命周期(单位：毫秒)

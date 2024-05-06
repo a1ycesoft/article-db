@@ -20,6 +20,8 @@ import (
 // ArticleDbService defines service.
 type ArticleDbService interface {
 	Hello(ctx context.Context, req *HelloRequest) (*HelloResponse, error)
+
+	GetArticleById(ctx context.Context, req *GetArticleByIdRequest) (*GetArticleByIdResponse, error) // rpc QueryArticleByKeyword(QueryArticleByKeywordRequest) returns(QueryArticleByKeywordResponse){}
 }
 
 func ArticleDbService_Hello_Handler(svr interface{}, ctx context.Context, f server.FilterFunc) (interface{}, error) {
@@ -40,6 +42,24 @@ func ArticleDbService_Hello_Handler(svr interface{}, ctx context.Context, f serv
 	return rsp, nil
 }
 
+func ArticleDbService_GetArticleById_Handler(svr interface{}, ctx context.Context, f server.FilterFunc) (interface{}, error) {
+	req := &GetArticleByIdRequest{}
+	filters, err := f(req)
+	if err != nil {
+		return nil, err
+	}
+	handleFunc := func(ctx context.Context, reqbody interface{}) (interface{}, error) {
+		return svr.(ArticleDbService).GetArticleById(ctx, reqbody.(*GetArticleByIdRequest))
+	}
+
+	var rsp interface{}
+	rsp, err = filters.Filter(ctx, req, handleFunc)
+	if err != nil {
+		return nil, err
+	}
+	return rsp, nil
+}
+
 // ArticleDbServer_ServiceDesc descriptor for server.RegisterService.
 var ArticleDbServer_ServiceDesc = server.ServiceDesc{
 	ServiceName: "arisu.ArticleDb",
@@ -48,6 +68,10 @@ var ArticleDbServer_ServiceDesc = server.ServiceDesc{
 		{
 			Name: "/arisu.ArticleDb/Hello",
 			Func: ArticleDbService_Hello_Handler,
+		},
+		{
+			Name: "/arisu.ArticleDb/GetArticleById",
+			Func: ArticleDbService_GetArticleById_Handler,
 		},
 	},
 }
@@ -66,6 +90,9 @@ type UnimplementedArticleDb struct{}
 func (s *UnimplementedArticleDb) Hello(ctx context.Context, req *HelloRequest) (*HelloResponse, error) {
 	return nil, errors.New("rpc Hello of service ArticleDb is not implemented")
 }
+func (s *UnimplementedArticleDb) GetArticleById(ctx context.Context, req *GetArticleByIdRequest) (*GetArticleByIdResponse, error) {
+	return nil, errors.New("rpc GetArticleById of service ArticleDb is not implemented")
+}
 
 // END --------------------------------- Default Unimplemented Server Service --------------------------------- END
 
@@ -76,6 +103,8 @@ func (s *UnimplementedArticleDb) Hello(ctx context.Context, req *HelloRequest) (
 // ArticleDbClientProxy defines service client proxy
 type ArticleDbClientProxy interface {
 	Hello(ctx context.Context, req *HelloRequest, opts ...client.Option) (rsp *HelloResponse, err error)
+
+	GetArticleById(ctx context.Context, req *GetArticleByIdRequest, opts ...client.Option) (rsp *GetArticleByIdResponse, err error) // rpc QueryArticleByKeyword(QueryArticleByKeywordRequest) returns(QueryArticleByKeywordResponse){}
 }
 
 type ArticleDbClientProxyImpl struct {
@@ -101,6 +130,26 @@ func (c *ArticleDbClientProxyImpl) Hello(ctx context.Context, req *HelloRequest,
 	callopts = append(callopts, c.opts...)
 	callopts = append(callopts, opts...)
 	rsp := &HelloResponse{}
+	if err := c.client.Invoke(ctx, req, rsp, callopts...); err != nil {
+		return nil, err
+	}
+	return rsp, nil
+}
+
+func (c *ArticleDbClientProxyImpl) GetArticleById(ctx context.Context, req *GetArticleByIdRequest, opts ...client.Option) (*GetArticleByIdResponse, error) {
+	ctx, msg := codec.WithCloneMessage(ctx)
+	defer codec.PutBackMessage(msg)
+	msg.WithClientRPCName("/arisu.ArticleDb/GetArticleById")
+	msg.WithCalleeServiceName(ArticleDbServer_ServiceDesc.ServiceName)
+	msg.WithCalleeApp("")
+	msg.WithCalleeServer("")
+	msg.WithCalleeService("ArticleDb")
+	msg.WithCalleeMethod("GetArticleById")
+	msg.WithSerializationType(codec.SerializationTypePB)
+	callopts := make([]client.Option, 0, len(c.opts)+len(opts))
+	callopts = append(callopts, c.opts...)
+	callopts = append(callopts, opts...)
+	rsp := &GetArticleByIdResponse{}
 	if err := c.client.Invoke(ctx, req, rsp, callopts...); err != nil {
 		return nil, err
 	}

@@ -6,8 +6,16 @@ option go_package = "article-db/pb";
 
 service ArticleDb {
   rpc Hello(HelloRequest) returns(HelloResponse){}
+  rpc GetArticleById(GetArticleByIdRequest) returns(GetArticleByIdResponse){}
+ // rpc QueryArticleByKeyword(QueryArticleByKeywordRequest) returns(QueryArticleByKeywordResponse){}
+}
+// ------------
+message BaseResponse {
+  int32 code = 1;
+  string msg = 2;
 }
 
+// -------------
 message HelloRequest {
   string msg = 1;
 }
@@ -15,4 +23,28 @@ message HelloRequest {
 message HelloResponse {
   string msg = 1;
 }
+
+// -------------
+message GetArticleByIdRequest {
+  int64 id = 1;
+}
+
+message GetArticleByIdResponse {
+  BaseResponse base = 1;
+  uint64 id = 2;
+  string title = 3;
+  string content = 4;
+}
+// -------------
+//message QueryArticleByKeywordRequest {
+//  string keyword = 1;
+//}
+//
+//message QueryArticleByKeywordResponse {
+//  BaseResponse base = 1;
+//}
+
+
+
+
 

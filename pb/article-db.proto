@@ -51,8 +51,7 @@ message QueryArticleByKeywordRequest {
 
 message QueryArticleByKeywordResponse {
   BaseResponse base = 1;
-  int32 size = 2;
-  repeated Article articles = 3;
+  repeated Article articles = 2;
 }
 // ---------------
 message InsertArticleRequest {

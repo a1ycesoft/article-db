@@ -33,6 +33,7 @@ func (ServiceImpl) GetArticleById(ctx context.Context, req *pb.GetArticleByIdReq
 }
 
 func (ServiceImpl) InsertArticle(ctx context.Context, req *pb.InsertArticleRequest) (*pb.InsertArticleResponse, error) {
+	//	log.Info(req.Title, req.Content)
 	err := model.InsertArticle(&req.Title, &req.Content)
 	if err != nil {
 		return &pb.InsertArticleResponse{Base: &pb.BaseResponse{
@@ -48,16 +49,12 @@ func (ServiceImpl) InsertArticle(ctx context.Context, req *pb.InsertArticleReque
 
 func (ServiceImpl) QueryArticleByKeyword(ctx context.Context, req *pb.QueryArticleByKeywordRequest) (*pb.QueryArticleByKeywordResponse, error) {
 	articles, err := model.QueryArticleByKeyword(req.GetKeyword(), req.GetPageNum(), req.GetPageSize())
-	for _, v := range articles {
-		log.Info(v)
-	}
 	if err != nil {
 		return &pb.QueryArticleByKeywordResponse{
 			Base: &pb.BaseResponse{
 				Code: 1,
 				Msg:  "服务器内部错误,查询失败",
 			},
-			Size:     0,
 			Articles: nil,
 		}, nil
 	}
@@ -74,7 +71,6 @@ func (ServiceImpl) QueryArticleByKeyword(ctx context.Context, req *pb.QueryArtic
 			Code: 0,
 			Msg:  "查询成功",
 		},
-		Size:     10,
 		Articles: arr,
 	}, nil
 }

@@ -71,7 +71,7 @@ func InsertArticle(title *string, content *string) error {
 		Content: *content,
 	}
 	js, err := json.Marshal(pa)
-	log.Info(string(js))
+	//	log.Info(string(js))
 	if err != nil {
 		log.Error("json解析错误")
 		tx.Rollback()

@@ -1,0 +1,1 @@
+go run .\server\main.go -conf .\conf\trpc_go.yaml

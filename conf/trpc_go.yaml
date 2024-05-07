@@ -10,14 +10,14 @@ client:
   service:
     - name: arisu.mysql.docker.db01
       target: dsn://root:173371292acg.@tcp(127.0.0.1:3308)/article_db?charset=utf8mb4&parseTime=True
-    - name: arisu.mysql.docker.es01
+    - name: arisu.huawei.es01
 
 plugins: #插件配置
   database:
     goes:
       clientoptions:
-        - name: arisu.mysql.docker.es01 # 和 client 中的 service name 保持一致
-          url: http://127.0.0.1:9600 #es地址
+        - name: arisu.huawei.es01 # 和 client 中的 service name 保持一致
+          url: http://124.71.177.72:9200 #es地址
           timeout: 1000 #超时时间
     gorm:
       # 所有数据库连接默认的日志配置

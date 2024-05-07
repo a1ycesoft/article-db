@@ -126,6 +126,7 @@ func QueryArticleByKeyword(keyword string, pageNum int64, pageSize int64) ([]*Ar
 	if len(articleIds) == 0 {
 		return articles, err
 	}
+	// 需要保证顺序
 	for _, v := range articleIds {
 		var article Article
 		db.First(&article, v)

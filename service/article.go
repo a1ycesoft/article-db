@@ -55,6 +55,7 @@ func (ServiceImpl) QueryArticleByKeyword(ctx context.Context, req *pb.QueryArtic
 				Code: 1,
 				Msg:  "服务器内部错误,查询失败",
 			},
+			Size:     0,
 			Articles: nil,
 		}, nil
 	}
@@ -71,6 +72,7 @@ func (ServiceImpl) QueryArticleByKeyword(ctx context.Context, req *pb.QueryArtic
 			Code: 0,
 			Msg:  "查询成功",
 		},
+		Size:     int64(len(arr)),
 		Articles: arr,
 	}, nil
 }

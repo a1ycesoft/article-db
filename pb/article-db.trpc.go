@@ -21,7 +21,11 @@ import (
 type ArticleDbService interface {
 	Hello(ctx context.Context, req *HelloRequest) (*HelloResponse, error)
 
-	GetArticleById(ctx context.Context, req *GetArticleByIdRequest) (*GetArticleByIdResponse, error) // rpc QueryArticleByKeyword(QueryArticleByKeywordRequest) returns(QueryArticleByKeywordResponse){}
+	GetArticleById(ctx context.Context, req *GetArticleByIdRequest) (*GetArticleByIdResponse, error)
+
+	InsertArticle(ctx context.Context, req *InsertArticleRequest) (*InsertArticleResponse, error)
+
+	QueryArticleByKeyword(ctx context.Context, req *QueryArticleByKeywordRequest) (*QueryArticleByKeywordResponse, error)
 }
 
 func ArticleDbService_Hello_Handler(svr interface{}, ctx context.Context, f server.FilterFunc) (interface{}, error) {
@@ -60,6 +64,42 @@ func ArticleDbService_GetArticleById_Handler(svr interface{}, ctx context.Contex
 	return rsp, nil
 }
 
+func ArticleDbService_InsertArticle_Handler(svr interface{}, ctx context.Context, f server.FilterFunc) (interface{}, error) {
+	req := &InsertArticleRequest{}
+	filters, err := f(req)
+	if err != nil {
+		return nil, err
+	}
+	handleFunc := func(ctx context.Context, reqbody interface{}) (interface{}, error) {
+		return svr.(ArticleDbService).InsertArticle(ctx, reqbody.(*InsertArticleRequest))
+	}
+
+	var rsp interface{}
+	rsp, err = filters.Filter(ctx, req, handleFunc)
+	if err != nil {
+		return nil, err
+	}
+	return rsp, nil
+}
+
+func ArticleDbService_QueryArticleByKeyword_Handler(svr interface{}, ctx context.Context, f server.FilterFunc) (interface{}, error) {
+	req := &QueryArticleByKeywordRequest{}
+	filters, err := f(req)
+	if err != nil {
+		return nil, err
+	}
+	handleFunc := func(ctx context.Context, reqbody interface{}) (interface{}, error) {
+		return svr.(ArticleDbService).QueryArticleByKeyword(ctx, reqbody.(*QueryArticleByKeywordRequest))
+	}
+
+	var rsp interface{}
+	rsp, err = filters.Filter(ctx, req, handleFunc)
+	if err != nil {
+		return nil, err
+	}
+	return rsp, nil
+}
+
 // ArticleDbServer_ServiceDesc descriptor for server.RegisterService.
 var ArticleDbServer_ServiceDesc = server.ServiceDesc{
 	ServiceName: "arisu.ArticleDb",
@@ -72,6 +112,14 @@ var ArticleDbServer_ServiceDesc = server.ServiceDesc{
 		{
 			Name: "/arisu.ArticleDb/GetArticleById",
 			Func: ArticleDbService_GetArticleById_Handler,
+		},
+		{
+			Name: "/arisu.ArticleDb/InsertArticle",
+			Func: ArticleDbService_InsertArticle_Handler,
+		},
+		{
+			Name: "/arisu.ArticleDb/QueryArticleByKeyword",
+			Func: ArticleDbService_QueryArticleByKeyword_Handler,
 		},
 	},
 }
@@ -93,6 +141,12 @@ func (s *UnimplementedArticleDb) Hello(ctx context.Context, req *HelloRequest) (
 func (s *UnimplementedArticleDb) GetArticleById(ctx context.Context, req *GetArticleByIdRequest) (*GetArticleByIdResponse, error) {
 	return nil, errors.New("rpc GetArticleById of service ArticleDb is not implemented")
 }
+func (s *UnimplementedArticleDb) InsertArticle(ctx context.Context, req *InsertArticleRequest) (*InsertArticleResponse, error) {
+	return nil, errors.New("rpc InsertArticle of service ArticleDb is not implemented")
+}
+func (s *UnimplementedArticleDb) QueryArticleByKeyword(ctx context.Context, req *QueryArticleByKeywordRequest) (*QueryArticleByKeywordResponse, error) {
+	return nil, errors.New("rpc QueryArticleByKeyword of service ArticleDb is not implemented")
+}
 
 // END --------------------------------- Default Unimplemented Server Service --------------------------------- END
 
@@ -104,7 +158,11 @@ func (s *UnimplementedArticleDb) GetArticleById(ctx context.Context, req *GetArt
 type ArticleDbClientProxy interface {
 	Hello(ctx context.Context, req *HelloRequest, opts ...client.Option) (rsp *HelloResponse, err error)
 
-	GetArticleById(ctx context.Context, req *GetArticleByIdRequest, opts ...client.Option) (rsp *GetArticleByIdResponse, err error) // rpc QueryArticleByKeyword(QueryArticleByKeywordRequest) returns(QueryArticleByKeywordResponse){}
+	GetArticleById(ctx context.Context, req *GetArticleByIdRequest, opts ...client.Option) (rsp *GetArticleByIdResponse, err error)
+
+	InsertArticle(ctx context.Context, req *InsertArticleRequest, opts ...client.Option) (rsp *InsertArticleResponse, err error)
+
+	QueryArticleByKeyword(ctx context.Context, req *QueryArticleByKeywordRequest, opts ...client.Option) (rsp *QueryArticleByKeywordResponse, err error)
 }
 
 type ArticleDbClientProxyImpl struct {
@@ -150,6 +208,46 @@ func (c *ArticleDbClientProxyImpl) GetArticleById(ctx context.Context, req *GetA
 	callopts = append(callopts, c.opts...)
 	callopts = append(callopts, opts...)
 	rsp := &GetArticleByIdResponse{}
+	if err := c.client.Invoke(ctx, req, rsp, callopts...); err != nil {
+		return nil, err
+	}
+	return rsp, nil
+}
+
+func (c *ArticleDbClientProxyImpl) InsertArticle(ctx context.Context, req *InsertArticleRequest, opts ...client.Option) (*InsertArticleResponse, error) {
+	ctx, msg := codec.WithCloneMessage(ctx)
+	defer codec.PutBackMessage(msg)
+	msg.WithClientRPCName("/arisu.ArticleDb/InsertArticle")
+	msg.WithCalleeServiceName(ArticleDbServer_ServiceDesc.ServiceName)
+	msg.WithCalleeApp("")
+	msg.WithCalleeServer("")
+	msg.WithCalleeService("ArticleDb")
+	msg.WithCalleeMethod("InsertArticle")
+	msg.WithSerializationType(codec.SerializationTypePB)
+	callopts := make([]client.Option, 0, len(c.opts)+len(opts))
+	callopts = append(callopts, c.opts...)
+	callopts = append(callopts, opts...)
+	rsp := &InsertArticleResponse{}
+	if err := c.client.Invoke(ctx, req, rsp, callopts...); err != nil {
+		return nil, err
+	}
+	return rsp, nil
+}
+
+func (c *ArticleDbClientProxyImpl) QueryArticleByKeyword(ctx context.Context, req *QueryArticleByKeywordRequest, opts ...client.Option) (*QueryArticleByKeywordResponse, error) {
+	ctx, msg := codec.WithCloneMessage(ctx)
+	defer codec.PutBackMessage(msg)
+	msg.WithClientRPCName("/arisu.ArticleDb/QueryArticleByKeyword")
+	msg.WithCalleeServiceName(ArticleDbServer_ServiceDesc.ServiceName)
+	msg.WithCalleeApp("")
+	msg.WithCalleeServer("")
+	msg.WithCalleeService("ArticleDb")
+	msg.WithCalleeMethod("QueryArticleByKeyword")
+	msg.WithSerializationType(codec.SerializationTypePB)
+	callopts := make([]client.Option, 0, len(c.opts)+len(opts))
+	callopts = append(callopts, c.opts...)
+	callopts = append(callopts, opts...)
+	rsp := &QueryArticleByKeywordResponse{}
 	if err := c.client.Invoke(ctx, req, rsp, callopts...); err != nil {
 		return nil, err
 	}

@@ -31,3 +31,50 @@ func (ServiceImpl) GetArticleById(ctx context.Context, req *pb.GetArticleByIdReq
 		Content: article.Content,
 	}, nil
 }
+
+func (ServiceImpl) InsertArticle(ctx context.Context, req *pb.InsertArticleRequest) (*pb.InsertArticleResponse, error) {
+	err := model.InsertArticle(&req.Title, &req.Content)
+	if err != nil {
+		return &pb.InsertArticleResponse{Base: &pb.BaseResponse{
+			Code: 1,
+			Msg:  "插入文章失败 " + err.Error(),
+		}}, nil
+	}
+	return &pb.InsertArticleResponse{Base: &pb.BaseResponse{
+		Code: 0,
+		Msg:  "插入文章成功",
+	}}, nil
+}
+
+func (ServiceImpl) QueryArticleByKeyword(ctx context.Context, req *pb.QueryArticleByKeywordRequest) (*pb.QueryArticleByKeywordResponse, error) {
+	articles, err := model.QueryArticleByKeyword(req.GetKeyword(), req.GetPageNum(), req.GetPageSize())
+	for _, v := range articles {
+		log.Info(v)
+	}
+	if err != nil {
+		return &pb.QueryArticleByKeywordResponse{
+			Base: &pb.BaseResponse{
+				Code: 1,
+				Msg:  "服务器内部错误,查询失败",
+			},
+			Size:     0,
+			Articles: nil,
+		}, nil
+	}
+	arr := make([]*pb.Article, len(articles))
+	for i, v := range articles {
+		arr[i] = &pb.Article{
+			Id:      int64(v.ID),
+			Title:   v.Title,
+			Content: v.Content,
+		}
+	}
+	return &pb.QueryArticleByKeywordResponse{
+		Base: &pb.BaseResponse{
+			Code: 0,
+			Msg:  "查询成功",
+		},
+		Size:     10,
+		Articles: arr,
+	}, nil
+}

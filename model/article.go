@@ -126,6 +126,11 @@ func QueryArticleByKeyword(keyword string, pageNum int64, pageSize int64) ([]*Ar
 	if len(articleIds) == 0 {
 		return articles, err
 	}
-	db.Find(&articles, articleIds)
+	for _, v := range articleIds {
+		var article Article
+		db.First(&article, v)
+		articles = append(articles, &article)
+	}
+	//db.Find(&articles, articleIds)
 	return articles, nil
 }

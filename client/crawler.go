@@ -1,18 +1,63 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"strings"
+	"trpc.group/trpc-go/trpc-go/log"
 )
 
-var t = "零基础用爬虫爬取网页内容（详细步骤+原理）"
-
-var c = "网络上有许多用 Python 爬取网页内容的教程，但一般需要写代码，没有相应基础的人要想短时间内上手，还是有门槛的。其实绝大多数场景下，用 Web Scraper （一个 Chrome 插件）就能迅速爬到目标内容，重要的是，不用下载东西，也基本不需要代码知识。"
+var cnt = 1
 
 func main() {
-	send(t, c)
+	file, err := os.OpenFile("./client/a.txt", os.O_RDONLY, 0)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+	reader := bufio.NewReader(file)
+	var s string
+	var t string
+	for {
+		if lineData, err := reader.ReadString('\n'); err != nil {
+			if err == io.EOF {
+				fmt.Println(cnt, " ", t)
+				send1(t, s)
+				break
+			}
+		} else {
+			runes := []rune(lineData)
+			if runes[0] == '第' {
+				if t != "" {
+					fmt.Println(cnt, " ", t)
+					cnt++
+					send1(t, s)
+					s = ""
+					//time.Sleep(time.Second)
+				}
+				lineData = strings.TrimRight(lineData, "\r\n")
+				split := strings.Split(lineData, " ")
+				fmt.Println(split)
+				t = split[1]
+				continue
+			} else {
+				now := strings.TrimRight(lineData, "\r\n")
+				s += now
+			}
+
+		}
+	}
+}
+func send1(title string, content string) {
+	//fmt.Println(title)
+	//fmt.Println(content)
 }
 
 func send(title string, content string) {
@@ -37,4 +82,37 @@ func send(title string, content string) {
 		return
 	}
 	fmt.Println(string(body))
+}
+
+func hitCrawl(url string) (string, string) {
+	// 请求html页面
+	res, err := http.Get(url)
+	if err != nil {
+		// 错误处理
+		log.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+	}
+	// 加载 HTML document对象
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var t, c string
+	// Find the review items
+	doc.Find(".article_title").Each(func(i int, s *goquery.Selection) {
+		t = s.Text()
+		return
+	})
+	doc.Find(".wp_articlecontent").Each(func(i int, s *goquery.Selection) {
+		c = s.Text()
+		return
+	})
+	c = strings.ReplaceAll(c, "\n", "")
+	c = strings.ReplaceAll(c, " ", "")
+	fmt.Println("title:", t)
+	fmt.Println("content:", c)
+	return t, c
 }

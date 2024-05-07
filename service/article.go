@@ -48,16 +48,22 @@ func (ServiceImpl) InsertArticle(ctx context.Context, req *pb.InsertArticleReque
 }
 
 func (ServiceImpl) QueryArticleByKeyword(ctx context.Context, req *pb.QueryArticleByKeywordRequest) (*pb.QueryArticleByKeywordResponse, error) {
-	articles, err := model.QueryArticleByKeyword(req.GetKeyword(), req.GetPageNum(), req.GetPageSize())
-	if err != nil {
-		return &pb.QueryArticleByKeywordResponse{
-			Base: &pb.BaseResponse{
-				Code: 1,
-				Msg:  "服务器内部错误,查询失败",
-			},
-			Size:     0,
-			Articles: nil,
-		}, nil
+	// 先查询数据库
+	articles, err := model.QueryArticleInRedis(req.GetKeyword(), req.GetPageNum(), req.GetPageSize())
+	if err != nil { // 缓存未命中/redis错误/json解析错误
+		articles, err = model.QueryArticleByKeyword(req.GetKeyword(), req.GetPageNum(), req.GetPageSize())
+		if err != nil {
+			return &pb.QueryArticleByKeywordResponse{
+				Base: &pb.BaseResponse{
+					Code: 1,
+					Msg:  "服务器内部错误,查询失败",
+				},
+				Size:     0,
+				Articles: nil,
+			}, nil
+		}
+		// 向缓存中插入articles
+		model.InsertArticlesToRedis(articles, req.GetKeyword(), req.GetPageNum(), req.GetPageSize())
 	}
 	arr := make([]*pb.Article, len(articles))
 	for i, v := range articles {

@@ -14,6 +14,7 @@ func main() {
 	// 初始化数据库
 	model.InitDb()
 	model.InitEs()
+	model.InitRedis()
 	if err := s.Serve(); err != nil {
 		log.Error(err)
 	}

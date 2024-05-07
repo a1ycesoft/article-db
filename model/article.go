@@ -3,10 +3,14 @@ package model
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"strings"
+	"time"
+	"trpc.group/trpc-go/trpc-go"
 	"trpc.group/trpc-go/trpc-go/log"
 )
 
@@ -42,6 +46,10 @@ type EsResponse struct {
 			Score float64 `json:"_score"`
 		} `json:"hits"`
 	} `json:"hits"`
+}
+
+type RedisValue struct {
+	Articles []Article
 }
 
 func GetArticleById(id uint) (*Article, error) {
@@ -92,8 +100,8 @@ func InsertArticle(title *string, content *string) error {
 	return nil
 }
 
-// 模糊搜索
-func QueryArticleByKeyword(keyword string, pageNum int64, pageSize int64) ([]*Article, error) {
+// 全文搜索
+func QueryArticleByKeyword(keyword string, pageNum int64, pageSize int64) ([]Article, error) {
 	var size = int(pageSize)
 	var from = int((pageNum - 1) * pageSize)
 	query := fmt.Sprintf("{ \"query\": { \"match\": {\"all\":\"%s\"} }"+
@@ -122,7 +130,7 @@ func QueryArticleByKeyword(keyword string, pageNum int64, pageSize int64) ([]*Ar
 		articleIds[i] = v.ID
 	}
 	log.Info(articleIds)
-	var articles []*Article
+	var articles []Article
 	if len(articleIds) == 0 {
 		return articles, err
 	}
@@ -130,8 +138,48 @@ func QueryArticleByKeyword(keyword string, pageNum int64, pageSize int64) ([]*Ar
 	for _, v := range articleIds {
 		var article Article
 		db.First(&article, v)
-		articles = append(articles, &article)
+		articles = append(articles, article)
 	}
 	//db.Find(&articles, articleIds)
 	return articles, nil
+}
+
+// 查询redis是否存在
+func QueryArticleInRedis(keyword string, pageNum int64, pageSize int64) ([]Article, error) {
+	key := getQueryKey(keyword, pageNum, pageSize)
+	val, err := redisCli.Get(trpc.BackgroundContext(), key).Result()
+	if errors.Is(err, redis.Nil) {
+		log.Info("缓存未命中")
+		return nil, err
+	}
+	if err != nil {
+		log.Info("redis错误")
+		return nil, err
+	}
+	// 存在
+	redisValue := &RedisValue{}
+	err = json.Unmarshal([]byte(val), redisValue)
+	if err != nil {
+		log.Error("redis json解析错误")
+		return nil, err
+	}
+	// 重新设置有效期
+	_, _ = redisCli.Expire(trpc.BackgroundContext(), key, time.Hour).Result()
+	return redisValue.Articles, nil
+}
+
+func InsertArticlesToRedis(articles []Article, keyword string, pageNum int64, pageSize int64) {
+	key := getQueryKey(keyword, pageNum, pageSize)
+	val := RedisValue{Articles: articles}
+	js, err := json.Marshal(val)
+	//log.Info(string(js))
+	if err != nil {
+		log.Error("json序列化失败")
+		return
+	}
+	err = redisCli.Set(trpc.BackgroundContext(), key, string(js), time.Hour).Err()
+	if err != nil {
+		log.Error("redis插入错误")
+		return
+	}
 }

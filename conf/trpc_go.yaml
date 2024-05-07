@@ -12,6 +12,9 @@ client:
     - name: arisu.mysql.docker.db01
       target: dsn://root:173371292acg.@tcp(127.0.0.1:3308)/article_db?charset=utf8mb4&parseTime=True
     - name: arisu.huawei.es01
+    - name: arisu.redis.docker.redis01           #后端服务的service name
+      target: redis://127.0.0.1:6379               #请求服务地址格式：redis://<user>:<password>@<host>:<port>/<db_number>
+      timeout: 2000
 
 plugins: #插件配置
   log: # logging configuration.

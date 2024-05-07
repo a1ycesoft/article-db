@@ -10,13 +10,14 @@ import (
 var queryKeyPrefix = "article-db:query:"
 var redisCli redis.UniversalClient
 
-func InitRedis() {
+func InitRedis() error {
 	var err error
 	redisCli, err = goredis.New("arisu.redis.docker.redis01")
 	if err != nil {
 		fmt.Println("连接到redis失败\n", err)
-		return
+		return err
 	}
+	return nil
 }
 
 func getQueryKey(keyword string, pageNum int64, pageSize int64) string {

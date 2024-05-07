@@ -83,7 +83,9 @@ create table articles
 
   在client文件夹中有示例，需要改动部分代码
 
-- conf中改配置；start.bat启动服务器
+- conf中改配置
+
+  start.bat启动服务器
 
 ## 测试
 
